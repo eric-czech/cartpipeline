@@ -7,7 +7,7 @@ def add_args(parser):
         '--gene-meta-path',
         required=True,
         metavar='PATH',
-        help='Path to CSV file containing gene metadata to be used for RNA seq collection'
+        help='Path to CSV file containing gene metadata to be used for expression data collection'
     )
     parser.add_argument(
         '--cache-dir',
@@ -40,4 +40,6 @@ def get_expression_data(args):
     gene_list = pd.read_csv(gene_meta_path)['Gene'].unique()
 
     df = tcga_data.get_data([study_id], data_type, gene_list, cache_dir=cache_dir)
+
     return df
+

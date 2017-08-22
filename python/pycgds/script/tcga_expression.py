@@ -17,12 +17,11 @@ def make_arg_parser():
     return parser
 
 if __name__ == "__main__":
-    # Parse arguments
     parser = add_args(make_arg_parser())
     args = parser.parse_args()
     logger.info('TCGA expression arguments: {}'.format(args))
 
-    # Run selection
+    # Run TCGA expression data collection
     df = get_expression_data(args)
 
     # Print result info
@@ -30,5 +29,4 @@ if __name__ == "__main__":
     df.info(buf=info)
     logging.info('TCGA expression result info:\n{}'.format(info.getvalue()))
 
-    # Write results to file
     df.to_csv(args.output, index=False)
