@@ -22,4 +22,15 @@ This pipeline has 3 major parts:
 
 In no particular order, some noteworthy details on parts above are:
 
-- 
+- [Ketrew Pipeline](ketrew/cart_pipeline.ml) - The pipeline here starts with a step to determine sets of genes to collect data for based on HPA protein/gene metadata, collects TCGA RNA-seq for all studies passed as arguments (each study is a separate workflow node), and then merges results as a final step
+- [Human Protein Atlas](python/pyhpa/pyhpa/data.py) - Module used to process HPA data in pipeline
+- [TCGA via cBioPortal](python/pycgds/pycgds/tcga.py) - Module used to collect TCGA data using [cBioPortal API Client](pycgds/pycgds/api.py)
+- [Aggregation](python/pyagg/pyagg/aggregation.py) - Module used to combine HPA and TCGA data
+
+## Notebooks
+
+Most of the more interesting results/information for this project is in one of these:
+
+- [Human Protein Atlas EDA](http://nbviewer.jupyter.org/github/eric-czech/cartpipeline/blob/master/python/notebooks/hpa/EDA%20-%20Human%20Protein%20Atlas.ipynb) - Shows what is exposed (easily) through the HPA project
+- [TCGA RNA-seq EDA](http://nbviewer.jupyter.org/github/eric-czech/cartpipeline/blob/master/python/notebooks/cgds/EDA%20-%20TCGA%20Expression%20%28via%20cBioPortal%29.ipynb) - Shows summaries of raw RNA-seq data that will be aggregated and used in pipeline
+- [Pipeline Results](http://nbviewer.jupyter.org/github/eric-czech/cartpipeline/blob/master/python/notebooks/results/Pipeline%20Results.ipynb) - Results of project showing how well or not well the pipeline ranks some known CAR-T antigens.
