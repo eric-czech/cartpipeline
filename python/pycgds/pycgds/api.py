@@ -14,22 +14,18 @@ logger = logging.getLogger(__name__)
 BASE_URL = 'http://www.cbioportal.org/public-portal/webservice.do?'
 
 
-# #### Searching CGDS Metadata Examples ####
-# pd.set_option('display.max_colwidth', 500)
-# dt = cgds.get_genetic_profiles('cellline_ccle_broad')
-# dt
-# ####
-
 def _to_url(cmd, data=None):
     url = '{}cmd={}'.format(BASE_URL, cmd)
     if data:
         url += '&' + '&'.join(['{}={}'.format(k, v) for k, v in data.items()])
     return url
 
+
 def _to_batches(sequence, batch_size):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(sequence), batch_size):
         yield sequence[i:i+batch_size]
+
 
 def _get(cmd, data=None):
     url = _to_url(cmd, data)
@@ -147,87 +143,3 @@ def get_genetic_profile_data(case_list_id, genetic_profile_id, gene_ids,
                 .format(case_list_id, genetic_profile_id, cache_path))
     res.to_pickle(cache_path)
     return res
-
-
-
-
-
-
-# def melt_raw_data(d, rm_null_values=True, value_numeric=True):
-#     """
-#     Transforms raw CGDS data from wide format (cell lines in columns) to long format.
-#
-#     Note that the uniqueness of gene + cell line id combinations will also be ensured.
-#
-#     :param d: Raw CGDS DataFrame
-#     :param rm_null_values: If true, rows with a VALUE of null will be removed after transformation to long format
-#     :param value_numeric: If true, VALUE will be assumed to be numeric and will be cast as such (and results
-#         will be checked for any non-convertible values)
-#     :return: Data in long format (ie CELL_LINE, GENE_ID, VALUE)
-#     """
-#
-#     # Currently data is in format where gene ids are in rows and cell line ids are in columns -- to correct this,
-#     # first ensure that the two gene identifiers given do not contain any conflicts:
-#     assert d.groupby('COMMON')['GENE_ID'].nunique().max() == 1
-#     assert d.groupby('GENE_ID')['COMMON'].nunique().max() == 1
-#
-#     # Next, conform the gene id names to something more informative and then pivot
-#     # the frame so that the gene ids are in rows along with cell line ids (pushed down out of columns):
-#     d = d.rename(columns={'GENE_ID': 'GENE_ID:CGDS', 'COMMON': 'GENE_ID:HGNC'})
-#     d = pd.melt(d, id_vars=['GENE_ID:CGDS', 'GENE_ID:HGNC'], var_name='CELL_LINE_ID', value_name='VALUE')
-#
-#     # Ensure all non-value fields are non-null
-#     assert np.all(d[[c for c in d if c != 'VALUE']].notnull())
-#
-#     # If specified drop rows with null values
-#     if rm_null_values:
-#         # Create mask for values to be ignored noting that the CGDS web service sometimes
-#         # returns string null for values
-#         mask = (d['VALUE'].notnull()) & (d['VALUE'].astype(str) != 'null')
-#
-#         # Drop any records containing null values for any cell line + gene combination
-#         d = subset(d, lambda df: df[mask], subset_op='Remove null values for column "VALUE"')
-#
-#         # Ensure no values are null
-#         assert np.all(d['VALUE'].notnull())
-#
-#     # Cast value to numeric unless disabled (which should rarely be the case -- CGDS table results
-#     # are almost always numeric)
-#     if value_numeric:
-#         d['VALUE'] = pd.to_numeric(d['VALUE'])
-#         assert np.all(d['VALUE'].notnull())
-#
-#     return d
-
-
-# DEFAULT_IGNORABLE_MUTATION_COLS =  [
-#     'mutation_status',
-#     'validation_status',
-#     'xvar_link', 'xvar_link_pdb', 'xvar_link_msa',
-#     'reference_read_count_normal',
-#     'variant_read_count_normal'
-# ]
-# def prep_mutation_data(d, c_rm=DEFAULT_IGNORABLE_MUTATION_COLS):
-#     d_exp = d.drop(c_rm, axis=1).copy()
-#
-#     # Convert Entrez ID to integer (and make sure this doesn't some how lead to differences)
-#     assert np.all(d_exp['entrez_gene_id'] == d_exp['entrez_gene_id'].astype(np.int64))
-#     d_exp['entrez_gene_id'] = d_exp['entrez_gene_id'].astype(np.int64)
-#
-#     # Fill "Functional Impact Score" NAs with unknown (it is always one of 'L', 'M', 'N', or 'H')
-#     # d_exp['functional_impact_score'] = d_exp['functional_impact_score'].fillna('Unknown')
-#     # d_exp['sequencing_center'] = d_exp['sequencing_center'].fillna('Unknown')
-#
-#     # Conform field names and convert to ucase
-#     d_exp = d_exp.rename(columns={
-#         'entrez_gene_id': 'GENE_ID:ENTREZ',
-#         'gene_symbol': 'GENE_ID:HGNC',
-#         'case_id': 'CELL_LINE_ID'
-#     })
-#     d_exp = d_exp.rename(columns=lambda c: c.upper())
-#
-#     # Remove completely duplicated records
-#     d_exp = subset(d_exp, lambda df: df[~df.duplicated()], subset_op='Remove duplicate records')
-#
-#     return d_exp
-
