@@ -6,6 +6,7 @@ open Printf;;
 
 let () = Unix.putenv "KETREW_CONFIGURATION" (Sys.getenv "KETREW_ROOT" ^ "/configuration.ml");;
 
+(* Set a few paths as constants for now [not sure what the idea way is w/ Ketrew yet]*)
 let pythonpath = String.concat ":" [
   "/tmp/cartpipeline/src/pyhpa";
   "/tmp/cartpipeline/src/pycgds";
@@ -13,6 +14,7 @@ let pythonpath = String.concat ":" [
 ];;
 let projectpath = "/Users/eczech/projects/hammer/";;
 
+(* Parse tcga study id strings from arguments (can be any number of them) *)
 let tcga_studies =
   let parseargs argv = match argv with
     | [] | [_] -> raise (Invalid_argument "No arguments given (must pass TCGA study id names)")
@@ -21,9 +23,11 @@ let tcga_studies =
 
 print_string ("Running pipeline with TCGA study ids: " ^ (String.concat ", " tcga_studies));;
 
-let run_pipeline cmd1 =
+let run_pipeline () =
   let open Ketrew.EDSL in
   let prjpath path =  projectpath ^ path in
+
+  (* Establish mounts to be shared on all docker instances *)
   let volume_mounts = [
     `Local (prjpath "repos/cartpipeline/python", "/tmp/cartpipeline/src");
     `Local (prjpath "cache/pipeline", "/tmp/cartpipeline/data");
@@ -36,11 +40,16 @@ let run_pipeline cmd1 =
       ~image: "py3.5-v1"
       ~volume_mounts: volume_mounts
       pgm in
+
+  (* All python invocations currently prefixed by call to set PYTHONPATH --
+  find a better way in the future *)
   let pypgm script args =
     Program.(
       shf "export PYTHONPATH=\"%s:$PYTHONPATH\"" pythonpath &&
       shf "python /tmp/cartpipeline/src/%s %s" script args
     ) in
+
+  (* Run HPA gene/protein filtering *)
   let collect_meta =
     workflow_node without_product
       ~name:"Gene Meta Generation"
@@ -48,6 +57,9 @@ let run_pipeline cmd1 =
         "pyhpa/script/gene_selector.py"
         "--output /tmp/cartpipeline/data/gene_meta.csv"
       )) in
+
+  (* Use gene/protein data to define scope of TCGA data collection and
+  that collection for each TCGA study as a separate node *)
   let collect_expression = List.map (fun study_id ->
     workflow_node without_product
       ~name:(sprintf "Expression Data Collection (%s)" study_id)
@@ -61,6 +73,8 @@ let run_pipeline cmd1 =
         )
       ))
     ) tcga_studies in
+
+  (* Aggregate all TCGA data and combine with gene/protein metadata *)
   let expression_paths = String.concat " " (
     List.map (fun study_id ->
       sprintf "/tmp/cartpipeline/data/expression_data_%s.csv" study_id
@@ -80,6 +94,6 @@ let run_pipeline cmd1 =
       ))
   in Ketrew.Client.submit_workflow aggregate;;
 
-let () = run_pipeline "ls";;
+let () = run_pipeline ();;
 
 (* utop cart_pipeline_v3.ml brca_tcga prad_tcga luad_tcga skcm_tcga laml_tcga gbm_tcga lgg_tcga coadread_tcga paad_tcga ov_tcga kirc_tcga meso_tcga *)
