@@ -24,7 +24,7 @@ In no particular order, some noteworthy details on parts above are:
 
 - [Ketrew Pipeline](ketrew/cart_pipeline.ml) - The pipeline here starts with a step to determine sets of genes to collect data for based on HPA protein/gene metadata, collects TCGA RNA-seq for all studies passed as arguments (each study is a separate workflow node), and then merges results as a final step
 - [Human Protein Atlas](python/pyhpa/pyhpa/data.py) - Module used to process HPA data in pipeline
-- [TCGA via cBioPortal](python/pycgds/pycgds/tcga.py) - Module used to collect TCGA data using [cBioPortal API Client](pycgds/pycgds/api.py)
+- [TCGA via cBioPortal](python/pycgds/pycgds/tcga.py) - Module used to collect TCGA data using [cBioPortal API Client](python/pycgds/pycgds/api.py)
 - [Aggregation](python/pyagg/pyagg/aggregation.py) - Module used to combine HPA and TCGA data
 
 ## Notebooks
