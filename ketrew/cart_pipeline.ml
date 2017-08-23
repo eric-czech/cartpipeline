@@ -6,7 +6,7 @@ open Printf;;
 
 let () = Unix.putenv "KETREW_CONFIGURATION" (Sys.getenv "KETREW_ROOT" ^ "/configuration.ml");;
 
-(* Set a few paths as constants for now [not sure what the idea way is w/ Ketrew yet]*)
+(* Set a few paths as constants for now [not sure what the ideal way is w/ Ketrew yet]*)
 let pythonpath = String.concat ":" [
   "/tmp/cartpipeline/src/pyhpa";
   "/tmp/cartpipeline/src/pycgds";
